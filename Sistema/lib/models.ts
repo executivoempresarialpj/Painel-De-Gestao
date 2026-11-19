@@ -1,0 +1,4 @@
+export type Product={id:string;name:string;sku:string;barcode:string|null;category:string|null;category_id:string|null;image_url:string|null;price:number;cost?:number;stock:number;minimum:number;unit:string;active:boolean}
+export type Sale={sale_day:string;customer_name?:string;id:string;number:number;created_at:string;operator:string;subtotal:number;discount:number;total:number;payment:string;status:string;items:{name:string;quantity:number;price:number}[];cancellation?:{reason:string;restocked:boolean;operator:string;created_at:string}}
+export type Movement={id:string;created_at:string;product:string;operator:string;kind:string;quantity:number;previous:number;balance:number;reason:string|null}
+export type Member={user_id:string;name:string;email:string;role:string;active:boolean;permissions:string[]}

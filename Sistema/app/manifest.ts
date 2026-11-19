@@ -1,0 +1,1 @@
+export default function manifest(){return {name:"Executivo Empresarial",short_name:"Executivo",start_url:"/",display:"standalone",theme_color:"#101f32",background_color:"#ffffff",icons:[{src:"/icone.png",sizes:"180x180",type:"image/png"}]}}
