@@ -22,9 +22,9 @@ begin
      when private.catalog_key(name) ~ '^copao( |$)' then 1 else 0 end)
     into units from jsonb_to_recordset(snapshots) as i(name text,quantity numeric);
   if coalesce(units,0)=0 then return; end if;
-  select count(*) into matches from public.products where store_id=s and active and private.catalog_key(name) in ('gelo','gelos');
-  if matches<>1 then raise exception 'Cadastre um único produto ativo chamado Gelo para vender o Baldão ou o Copão.'; end if;
-  select * into ice from public.products where store_id=s and active and private.catalog_key(name) in ('gelo','gelos') for update;
+  select count(*) into matches from public.products where store_id=s and active and private.catalog_key(name) in ('gelo','gelos','gelo de sabor');
+  if matches<>1 then raise exception 'Cadastre um único produto ativo chamado Gelo ou Gelo de Sabor para vender o Baldão ou o Copão.'; end if;
+  select * into ice from public.products where store_id=s and active and private.catalog_key(name) in ('gelo','gelos','gelo de sabor') for update;
   if not found or ice.stock<units then raise exception 'Estoque de gelo insuficiente. Esta venda precisa de % unidade(s) adicionais.',units; end if;
   perform private.move(s,ice.id,-units,'sale','Consumo automático de gelo',sale);
   update public.sales set ice_cost=round(ice.cost*units,2) where id=sale and store_id=s;
