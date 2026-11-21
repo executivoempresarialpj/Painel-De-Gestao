@@ -15,19 +15,26 @@ export function Dashboard({report,range,user,signedIn,configured,showReports}:{s
   const inventory=report?.inventory
   const currency=(n?:number)=>n===undefined?undefined:brl(n)
   const count=(n?:number)=>n===undefined?undefined:num(n)
-  const metrics=[
+  const groups=[
+    {title:"Hoje",className:"daily-metrics",metrics:[
     {label:"Vendas hoje",value:count(m?.today_sales),detail:"Vendas concluídas hoje",icon:ShoppingCart,color:"blue"},
-    {label:"Vendas no mês",value:count(m?.month_sales),detail:"Vendas concluídas no mês",icon:Receipt,color:"violet"},
     {label:"Faturamento hoje",value:currency(m?.today_revenue),detail:"Receita de vendas hoje",icon:CircleDollarSign,color:"green"},
+    {label:"Lucro do dia",value:currency(m?.today_profit),detail:"Receita após descontos menos o custo",icon:TrendingUp,color:"green"}
+    ]},
+    {title:"Vendas e faturamento",className:"summary-metrics",metrics:[
+    {label:"Vendas no mês",value:count(m?.month_sales),detail:"Vendas concluídas no mês",icon:Receipt,color:"violet"},
     {label:"Faturamento no mês",value:currency(m?.month_revenue),detail:"Receita no mês atual",icon:Wallet,color:"blue"},
+    {label:"Lucro bruto no mês",value:currency(m?.month_profit),detail:"Receita menos custo no mês",icon:TrendingUp,color:"green"},
     {label:"Faturamento acumulado",value:currency(m?.all_revenue),detail:"Desde o início da operação",icon:Banknote,color:"violet"},
     {label:"Ticket médio",value:currency(m?.ticket),detail:"Por venda no período",icon:BadgeDollarSign,color:"cyan"},
-    {label:"Lucro bruto estimado",value:currency(m?.month_profit),detail:"Receita menos custo no mês",icon:TrendingUp,color:"green"},
+    ]},
+    {title:"Estoque",className:"summary-metrics",metrics:[
     {label:"Produtos cadastrados",value:count(inventory?.products),detail:"No seu catálogo",icon:Package,color:"blue"},
     {label:"Itens em estoque",value:count(inventory?.items),detail:"Quantidade disponível",icon:Boxes,color:"cyan"},
     {label:"Valor do estoque",value:currency(inventory?.value),detail:"A preço de custo",icon:Wallet,color:"violet"},
     {label:"Estoque baixo",value:count(inventory?.low),detail:"No limite ou abaixo do mínimo",icon:TriangleAlert,color:"amber"},
     {label:"Produtos esgotados",value:count(inventory?.empty),detail:"Ativos sem unidades disponíveis",icon:PackageX,color:"red"}
+    ]}
   ]
   return <>
     <Heading title="Painel Executivo" subtitle="Acompanhe o desempenho e a operação da sua loja em um só lugar.">
@@ -37,8 +44,17 @@ export function Dashboard({report,range,user,signedIn,configured,showReports}:{s
       <div className="banner-content"><span className="banner-icon"><ChartNoAxesCombined size={21}/></span><div><h2>{user?<>Olá, {user}!</>:"Visão geral da sua loja"}</h2><p>{report?"Confira os principais indicadores de vendas e estoque.":"Conecte sua loja para acompanhar vendas e estoque em tempo real."}</p></div></div>
 
     </section>
-    <div className="section-heading"><div><h2>Indicadores da loja</h2><p>Resumo de vendas, faturamento e estoque</p></div>{!configured && <span className="connection"><span/> Banco não configurado</span>}</div>
-    <div className="metric-grid dashboard-metrics">{metrics.map(({label,value,detail,icon:Icon,color})=><Card className="metric" key={label}><div className="metric-label"><span className={"metric-icon "+color}><Icon size={17}/></span><h3>{label}</h3></div><EmptyValue value={value}/><p>{detail}</p></Card>)}</div>
+    {!configured && <span className="connection"><span/> Banco não configurado</span>}
+    {groups.map(group=><section key={group.title} className="dashboard-section">
+      <h2>{group.title}</h2>
+      <div className={"metric-grid dashboard-metrics "+group.className}>
+        {group.metrics.map(({label,value,detail,icon:Icon,color})=>
+          <Card className={"metric"+(label==="Lucro do dia"?" daily-profit":"")} key={label}>
+            <div className="metric-label"><span className={"metric-icon "+color}><Icon size={17}/></span><h3>{label}</h3></div>
+            <EmptyValue value={value}/><p>{detail}</p>
+          </Card>)}
+      </div>
+    </section>)}
     <div className="highlight-grid">
       <Card className="chart-card"><div className="chart-heading"><span className="metric-icon blue"><BarChart3 size={19}/></span><div><h3>Faturamento por dia</h3><p>Receita de vendas no período selecionado</p></div></div><Trend data={report?.daily ?? []}/></Card>
       <Card className="chart-card"><div className="chart-heading"><span className="metric-icon amber"><Trophy size={18}/></span><div><h3>Produtos mais vendidos</h3><p>Ranking por quantidade vendida</p></div></div><RankingList rows={(report?.ranking ?? []).slice(0,5).map(x=>({name:x.name,amount:x.quantity}))}/>{showReports && <Link className="ranking-link" href="/relatorios">Ver relatórios <ArrowRight size={15}/></Link>}</Card>

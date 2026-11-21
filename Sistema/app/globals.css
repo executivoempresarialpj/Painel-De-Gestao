@@ -260,3 +260,12 @@ details.panel[open]>summary{margin-bottom:12px}
 .company-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:1rem}.company-row b{flex:1;min-width:9rem}.company-row small{display:block;font-weight:400}
 .top-logo{width:38px;height:38px;border-radius:9px;object-fit:contain;background:transparent}.dashboard-metrics .metric{box-shadow:0 2px 9px #1228410c}.report-charts>.chart-card{content-visibility:auto;contain-intrinsic-size:auto 300px}
 @media(max-width:700px){.master-page{padding:1rem;max-width:100%;min-width:0}.master-page .panel,.panel{min-width:0}.company-row{display:grid;grid-template-columns:1fr 1fr}.auth-form input,.form-grid input,.filters input,select{font-size:16px}.filters{flex-wrap:wrap}.alerts-panel{max-width:85vw}.shell main{padding-bottom:calc(1rem + env(safe-area-inset-bottom))}.master-page input,.master-page select{max-width:100%;min-width:0}}
+.dashboard-section>h2{margin:0 0 9px;font-size:15px;color:#233852}
+.dashboard-section+.dashboard-section{margin-top:20px}
+.daily-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+.summary-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}
+.dashboard-metrics .daily-profit{border-color:#9ed9bb;background:#f0fbf5}
+.dashboard-metrics .daily-profit strong{color:#135c3e}
+@media(max-width:950px){.summary-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.daily-metrics,.summary-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-metrics .daily-profit{grid-column:1/-1}}
+@media(max-width:350px){.daily-metrics,.summary-metrics{grid-template-columns:1fr}}

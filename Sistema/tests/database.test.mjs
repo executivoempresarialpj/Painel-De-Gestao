@@ -89,6 +89,7 @@ before(async()=>{
   await db.exec(await readFile(new URL("../supabase/migrations/202611180004_clientes.sql",import.meta.url),"utf8"))
   await db.exec(await readFile(new URL("../supabase/migrations/202611180005_servicos.sql",import.meta.url),"utf8"))
   await db.exec(await readFile(new URL("../supabase/migrations/202611180006_gestao.sql",import.meta.url),"utf8"))
+  await db.exec(await readFile(new URL("../supabase/migrations/202611210001_sales_updates.sql",import.meta.url),"utf8"))
   for(const email of ["owner","outsider","cashier"]) await as(master,run=>run("select public.set_account_access($1,true)",[email+"@example.com"]))
 
 })
@@ -334,4 +335,35 @@ test("exclusão de conta libera e-mail e remove dados de sua própria empresa",a
  assert.equal((await db.query("select * from auth.users where email='reuso@example.com'")).rows.length,0)
  await db.query("insert into auth.users values($1,'reuso@example.com',now())",[randomUUID()])
  await assert.rejects(as(master,r=>r("select public.delete_customer_account('master@example.com','master@example.com')")),/gestor protegida/)
+})
+
+test("Adega consome e estorna gelo uma vez por venda e desconta o custo do lucro de hoje", async()=>{
+  const adega=await as(master,run=>scalar(run,
+    "select public.configure_company(null,'Adega do Chefinho','starter','active',null,null,'owner@example.com','Chefinho','retail',null) as result"))
+  const subscription=JSON.stringify({endpoint:"https://fcm.googleapis.com/fcm/send/test"})
+  await as(owner,run=>run("select public.register_sale_push($1,$2)",[adega,subscription]))
+  await assert.rejects(as(outsider,run=>run("select public.register_sale_push($1,$2)",[adega,subscription])),/permissão/)
+  const [ice,bucket,cup]=await as(owner,async run=>{
+    const ids=[]
+    for(const [name,stock,cost] of [["Gelo",10,2],["Baldão de Hisky",10,60],["Copão",10,50]]) {
+      ids.push(await scalar(run,"select public.save_product($1,$2) as result",[adega,JSON.stringify(product(name,stock,cost))]))
+    }
+    return ids
+  })
+  const cart=JSON.stringify([{id:bucket,quantity:2},{id:cup,quantity:1}])
+  const key=randomUUID()
+  const record=(run,k)=>scalar(run,"select public.record_sale($1,$2,$3,10,'cash',null,null) as result",[adega,k,cart])
+  const sale=await as(owner,run=>record(run,key))
+  assert.equal((await as(owner,run=>record(run,key))).id,sale.id)
+  const claim=()=>db.query("select public.claim_sale_push($1,$2) as subscription",[adega,sale.id])
+  assert.equal((await claim()).rows.length,1)
+  assert.equal((await claim()).rows.length,0)
+  assert.equal((await as(owner,run=>state(run,ice,adega))).stock,3)
+  await assert.rejects(as(owner,run=>record(run,randomUUID())),/Estoque de gelo insuficiente/)
+  assert.equal((await as(owner,run=>state(run,bucket,adega))).stock,8)
+  const report=await as(owner,run=>scalar(run,
+    "select public.executive_report($1,current_date-1,current_date+1) as result",[adega]))
+  assert.equal(report.metrics.today_profit,106)
+  await as(owner,run=>run("select public.cancel_sale($1,$2,'Teste',true)",[adega,sale.id]))
+  assert.equal((await as(owner,run=>state(run,ice,adega))).stock,10)
 })

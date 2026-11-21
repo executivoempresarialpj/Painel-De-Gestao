@@ -17,7 +17,7 @@ const retailLinks = [
   {title:"Funcionários",href:"/funcionarios",icon:UsersRound},
   {title:"Configurações",href:"/configuracoes",icon:Settings}
 ]
-const administration=["/funcionarios","/configuracoes"]
+const administration=["/funcionarios"]
 const roles={owner:"Proprietário",manager:"Gerente",cashier:"Operador de caixa"}
 export function Shell({children,store,stores,email,master}:{children:React.ReactNode;store?:Store;stores:Store[];email?:string;master:boolean}) {
   const links=store?.mode==="services"?retailLinks.filter(l=>!["/vendas","/pdv","/relatorios"].includes(l.href)).concat([{title:"Serviços",href:"/servicos",icon:ReceiptIcon}]):retailLinks
@@ -30,7 +30,8 @@ export function Shell({children,store,stores,email,master}:{children:React.React
   const visible=links.filter(link=> !store || !(
     link.href==="/" && !allowed("executive") || link.href==="/relatorios" && !allowed("reports") ||
     link.href==="/estoque" && !allowed("stock") ||
-    administration.includes(link.href) && store.role!=="owner"
+    administration.includes(link.href) && store.role!=="owner" ||
+    link.href==="/configuracoes" && store.mode==="services" && !allowed("settings")
   ))
   return <div className={collapsed?"shell collapsed":"shell"}>
     {open && <button className="scrim" aria-label="Fechar menu" onClick={()=>setOpen(false)}/>}
