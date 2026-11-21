@@ -3,7 +3,6 @@ import {useEffect,useRef,useState} from "react"
 import Link from "next/link"
 import {usePathname} from "next/navigation"
 import {Bell} from "lucide-react"
-import {SaleAlerts} from "@/components/sale-alerts"
 import {readAlerts} from "@/app/actions"
 
 export function Notifications({store}:{store:string}){
@@ -41,5 +40,5 @@ export function Notifications({store}:{store:string}){
    finally{setBusy(false)}
  }
  return <div className="stock-notifications"><button aria-expanded={open} disabled={busy} className="icon-button" onClick={review} aria-label={unread?"Ver novos avisos de estoque":"Ver avisos de estoque"}><Bell size={19}/>{unread && <i className="pulse-dot"/>}</button>
- {open && <section className="alerts-panel"><h3>Avisos de estoque</h3>{busy?"Consultando…":error || (!items.length?"Nenhum aviso novo.":<ul>{items.map(p=><li key={p.id}>{p.name} <small>{p.stock===0?"Esgotado":"Estoque baixo · "+p.stock} · {p.sku}</small></li>)}</ul>)}<Link href="/produtos?availability=empty" onClick={()=>setOpen(false)}>Esgotados</Link> · <Link href="/produtos?availability=low" onClick={()=>setOpen(false)}>Estoque baixo</Link><SaleAlerts store={store}/></section>}</div>
+ {open && <section className="alerts-panel"><h3>Avisos de estoque</h3>{busy?"Consultando…":error || (!items.length?"Nenhum aviso novo.":<ul>{items.map(p=><li key={p.id}>{p.name} <small>{p.stock===0?"Esgotado":"Estoque baixo · "+p.stock} · {p.sku}</small></li>)}</ul>)}<Link href="/produtos?availability=empty" onClick={()=>setOpen(false)}>Esgotados</Link> · <Link href="/produtos?availability=low" onClick={()=>setOpen(false)}>Estoque baixo</Link></section>}</div>
 }

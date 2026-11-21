@@ -266,8 +266,6 @@ details.panel[open]>summary{margin-bottom:12px}
 .summary-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}
 .dashboard-metrics .daily-profit{border-color:#9ed9bb;background:#f0fbf5}
 .dashboard-metrics .daily-profit strong{color:#135c3e}
-.sale-alert-settings{display:grid;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid #dfe6ef}
-.sale-alert-settings small{display:block}
 @media(max-width:950px){.summary-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.daily-metrics,.summary-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-metrics .daily-profit{grid-column:1/-1}}
 @media(max-width:350px){.daily-metrics,.summary-metrics{grid-template-columns:1fr}}

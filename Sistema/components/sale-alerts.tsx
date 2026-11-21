@@ -1,6 +1,7 @@
 "use client"
 
 import {useEffect,useState} from "react"
+import {Card} from "@/components/ui/card"
 
 export function SaleAlerts({store}:{store:string}) {
   const [config,setConfig] = useState<{key:string;active:boolean}|null>(null)
@@ -11,7 +12,7 @@ export function SaleAlerts({store}:{store:string}) {
   useEffect(()=>{
     setSupported("serviceWorker" in navigator && "PushManager" in window && "Notification" in window)
     const controller=new AbortController()
-    fetch("/api/venda-push",{signal:controller.signal}).then(response=>response.json()).then(setConfig).catch(()=>{})
+    fetch("/api/venda-push",{signal:controller.signal}).then(response=>response.json()).then(setConfig).catch(()=>{if(!controller.signal.aborted)setConfig({key:"",active:false})})
     return ()=>controller.abort()
   },[])
 
@@ -40,12 +41,12 @@ export function SaleAlerts({store}:{store:string}) {
     } finally { setBusy(false) }
   }
 
-  if (!config?.key) return null
-  return <div className="sale-alert-settings">
-    <h3>Notificações de venda</h3>
-    {supported ? <button type="button" className="button outline" onClick={toggle} disabled={busy}>
-      {busy?"Aguarde…":config.active?"Desativar neste aparelho":"Ativar neste aparelho"}
+  return <Card className="panel">
+    <h2>Notificações de venda</h2>
+    <p className="muted">Receba um aviso com o valor da venda neste aparelho.</p>
+    {!config?.key ? <p className="muted">{config ? "Notificações indisponíveis no momento." : "Verificando disponibilidade…"}</p> : supported ? <button type="button" className="button outline" onClick={toggle} disabled={busy}>
+      {busy?"Aguarde…":config.active?"Desativar neste aparelho":"Receber notificações"}
     </button> : <small>No iPhone, adicione o painel à Tela de Início e abra pelo ícone para ativar.</small>}
     {status && <small role="status">{status}</small>}
-  </div>
+  </Card>
 }

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import {SaleAlerts} from "@/components/sale-alerts"
 import {Receipt} from "@/components/receipt"
 import {notFound,redirect} from "next/navigation"
 import {Plus,LockKeyhole,ArrowRight,Upload} from "lucide-react"
@@ -24,7 +25,7 @@ const pages:Record<string,[string,string,string?]>={
   vendas:["Histórico de Vendas","Consulte vendas, pagamentos e cancelamentos."],
   relatorios:["Relatórios","Analise vendas, faturamento, lucro bruto e estoque.","reports"],
   funcionarios:["Funcionários","Controle os vínculos e permissões da equipe.","staff"],
-  configuracoes:["Configurações","Atualize os dados e o fuso horário da loja.","settings"],
+  configuracoes:["Configurações","Gerencie as preferências da loja e deste aparelho."],
   loja:["Cadastrar empresa","Crie um ambiente de trabalho para sua loja."]
 }
 const isId=(v?:string)=>!!v && /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(v)
@@ -45,6 +46,7 @@ export default async function Section({params,searchParams}:{params:Promise<{sec
   }
 
   if(!store) notFound()
+  if(section==="configuracoes" && store.mode==="services" && !can(store,"settings")) redirect("/servicos")
   const db=auth.db
   const rpc=async <T,>(name:string,args:Record<string,unknown>)=>{
     const {data,error}=await db.rpc(name,args)
@@ -127,7 +129,8 @@ export default async function Section({params,searchParams}:{params:Promise<{sec
           <Card className="panel"><h2>Equipe da loja</h2><div className="item-list">{members.map(member=><details className="item-detail" key={member.user_id}><summary><b>{member.name}</b><span>{member.email}</span><span>{member.role==="owner"?"Proprietário":member.role==="manager"?"Gerente":"Operador de caixa"}</span><span className={"badge "+(member.active?"green":"neutral")}>{member.active?"Ativo":"Inativo"}</span></summary><div className="detail-body">{member.role==="owner"?<p>Proprietário da empresa.</p>:<MemberForm store={store.id} member={member}/>}</div></details>)}</div></Card></>
       }
       case "configuracoes":
-        return <>{heading}<Card className="panel"><ActionForm store={store.id} operation="settings"><label>Nome da loja<input name="name" minLength={2} maxLength={120} required defaultValue={store.name}/></label><label>Estoque mínimo para novos cadastros<input name="minimum" type="number" min="0" step=".001" required defaultValue={store.minimum??0}/></label><label>Unidade para novos cadastros<input name="unit" required maxLength={16} defaultValue={store.unit??"un"}/></label><label>Fuso horário (IANA)<input name="timezone" defaultValue={store.timezone} required/></label></ActionForm></Card></>
+        return <>{heading}{store.mode!=="services" && <SaleAlerts key={store.id} store={store.id}/>}
+          {can(store,"settings") && <Card className="panel"><ActionForm store={store.id} operation="settings"><label>Nome da loja<input name="name" minLength={2} maxLength={120} required defaultValue={store.name}/></label><label>Estoque mínimo para novos cadastros<input name="minimum" type="number" min="0" step=".001" required defaultValue={store.minimum??0}/></label><label>Unidade para novos cadastros<input name="unit" required maxLength={16} defaultValue={store.unit??"un"}/></label><label>Fuso horário (IANA)<input name="timezone" defaultValue={store.timezone} required/></label></ActionForm></Card>}</>
     }
   } catch(error) {
     return <>{heading}<Card className="panel"><p role="alert" className="error">{error instanceof Error?error.message:"Não foi possível carregar os dados. Tente novamente."}</p></Card></>
