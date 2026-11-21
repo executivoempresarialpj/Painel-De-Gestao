@@ -27,3 +27,9 @@ Em Empresas → Editar, escolha uma imagem PNG, JPEG ou WebP de até 700 KB e sa
 Em Segurança da conta → Excluir conta definitivamente, digite duas vezes o mesmo e-mail. A exclusão libera o e-mail e apaga as empresas em que a conta é a única proprietária. Contas gestoras e contas com histórico ou propriedade compartilhada em outra empresa são protegidas. Para estas, use a remoção de acesso por empresa.
 Em Relatórios → Produtos vendidos, filtre por período e produto e ordene por quantidade, venda bruta, custo ou lucro.
 No iPhone, entre na loja correta pelo Safari, abra Compartilhar → Adicionar à Tela de Início e confirme Adicionar. Se aparecer Abrir como App da Web, ative. Depois de alterar a logo, adicione o atalho novamente para renovar a imagem. A operação requer internet.
+
+### Notificações de venda e baixa de gelo
+
+Aplique a migração `202611210001_sales_updates.sql` antes de publicar. Na Adega do Chefinho, o cadastro deve conter um único produto ativo chamado **Gelo** (ou **Gelos**). Valide os nomes de Baldão de Whisky (também aceita Hisky, Whiskey e Uísque) e Copão no catálogo da loja.
+
+Para ativar o push, gere uma única chave com `npx web-push generate-vapid-keys` e configure `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (contato no formato `mailto:`) e `SUPABASE_SERVICE_ROLE_KEY` no ambiente de servidor da Vercel. Cada pessoa autoriza seu aparelho no sino de avisos da loja. Titulares e gestores com acesso a vendas recebem as vendas da loja. Operadores recebem as vendas que registraram.

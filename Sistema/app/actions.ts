@@ -1,6 +1,8 @@
 "use server"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { after } from "next/server"
+import {notifySale,pushCookie} from "@/lib/sale-push"
 import { revalidatePath } from "next/cache"
 import {can,configured,database,session} from "@/lib/supabase"
 import {parseProductImport} from "@/lib/product-import"
@@ -31,7 +33,14 @@ export async function authenticate(_:ActionState,form:FormData):Promise<ActionSt
   redirect(value(form,"portal")==="manager"?"/master":"/")
 }
 export async function logout() {
-  if(configured) await (await database()).auth.signOut()
+  if(configured) {
+    const db=await database()
+    const jar=await cookies()
+    const endpoint=jar.get(pushCookie)?.value
+    if(endpoint) await db.rpc("unregister_sale_push",{destination:endpoint})
+    jar.delete(pushCookie)
+    await db.auth.signOut()
+  }
   ;(await cookies()).delete("varejo_store")
   redirect("/login")
 }
@@ -105,7 +114,13 @@ export async function checkout(store:string, key:string, items:{id:string;quanti
   const {data,error}=await auth.db.rpc("record_sale",{sold_on:day || null,customer,s:store,request_key:key,items,rebate,payment_method:payment})
   if(error) return {error:error.message, retry:!error.code || error.code==="PGRST000" || error.code==="PGRST001" || error.code==="PGRST002" || error.code==="PGRST003"}
   revalidatePath("/", "layout")
-  return {sale:data as {id:string;number:number;total:number;status:string}}
+  const sale=data as {id:string;number:number;total:number;status:string}
+  const selectedStore=auth.store
+  if(sale.status==="completed") after(async ()=>{
+    try { await notifySale(selectedStore,sale) }
+    catch { console.warn("Falha ao processar a notificação da venda") }
+  })
+  return {sale}
 }
 export async function findProducts(store:string, query:string) {
   const auth=await session()
