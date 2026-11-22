@@ -90,6 +90,7 @@ before(async()=>{
   await db.exec(await readFile(new URL("../supabase/migrations/202611180005_servicos.sql",import.meta.url),"utf8"))
   await db.exec(await readFile(new URL("../supabase/migrations/202611180006_gestao.sql",import.meta.url),"utf8"))
   await db.exec(await readFile(new URL("../supabase/migrations/202611210001_sales_updates.sql",import.meta.url),"utf8"))
+  await db.exec(await readFile(new URL("../supabase/migrations/202611220001_profit_24h.sql",import.meta.url),"utf8"))
   for(const email of ["owner","outsider","cashier"]) await as(master,run=>run("select public.set_account_access($1,true)",[email+"@example.com"]))
 
 })
@@ -363,7 +364,14 @@ test("Adega consome e estorna gelo uma vez por venda e desconta o custo do lucro
   assert.equal((await as(owner,run=>state(run,bucket,adega))).stock,8)
   const report=await as(owner,run=>scalar(run,
     "select public.executive_report($1,current_date-1,current_date+1) as result",[adega]))
-  assert.equal(report.metrics.today_profit,106)
+  assert.equal(report.metrics.last_24h_profit,106)
+  assert.equal(report.metrics.month_profit,106)
+  assert.equal(report.ranking.reduce((total,item)=>total+item.profit,0),106)
+  await db.query("update public.sales set created_at=now()-interval '25 hours' where id=$1",[sale.id])
+  const updated=await as(owner,run=>scalar(run,
+    "select public.executive_report($1,current_date-1,current_date+1) as result",[adega]))
+  assert.equal(updated.metrics.last_24h_profit,0)
+  assert.equal(updated.metrics.month_profit,106)
   await as(owner,run=>run("select public.cancel_sale($1,$2,'Teste',true)",[adega,sale.id]))
   assert.equal((await as(owner,run=>state(run,ice,adega))).stock,10)
 })

@@ -39,7 +39,7 @@ export async function logout() {
     const endpoint=jar.get(pushCookie)?.value
     if(endpoint) await db.rpc("unregister_sale_push",{destination:endpoint})
     jar.delete(pushCookie)
-    await db.auth.signOut()
+    await db.auth.signOut({scope:"local"})
   }
   ;(await cookies()).delete("varejo_store")
   redirect("/login")

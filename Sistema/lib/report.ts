@@ -2,7 +2,7 @@ import {dayIn} from "@/lib/utils"
 export type Series={date:string;sales:number;revenue:number}
 export type Ranking={product_id:string;name:string;quantity:number;gross:number;profit:number;cost:number}
 export type Report={
-  metrics:{today_sales:number;month_sales:number;today_revenue:number;today_profit?:number;month_revenue:number;all_revenue:number;ticket:number;period_sales:number;period_revenue:number;month_profit:number;period_profit:number;units_sold:number}
+  metrics:{today_sales:number;month_sales:number;today_revenue:number;last_24h_profit?:number;month_revenue:number;all_revenue:number;ticket:number;period_sales:number;period_revenue:number;month_profit:number;period_profit:number;units_sold:number}
   inventory:{products:number;items:number;value:number;low:number;empty:number}
   daily:Series[];monthly:Series[];ranking:Ranking[];categories:{name:string;quantity:number}[];payments:{name:string;sales:number;revenue:number}[]
 }
