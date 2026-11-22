@@ -16,15 +16,15 @@ export function Dashboard({report,range,user,signedIn,configured,showReports}:{s
   const currency=(n?:number)=>n===undefined?undefined:brl(n)
   const count=(n?:number)=>n===undefined?undefined:num(n)
   const groups=[
-    {title:"Hoje",className:"daily-metrics",metrics:[
+    {title:"Resumo recente",className:"daily-metrics",metrics:[
     {label:"Vendas hoje",value:count(m?.today_sales),detail:"Vendas concluídas hoje",icon:ShoppingCart,color:"blue"},
     {label:"Faturamento hoje",value:currency(m?.today_revenue),detail:"Receita de vendas hoje",icon:CircleDollarSign,color:"green"},
-    {label:"Lucro do dia",value:currency(m?.today_profit),detail:"Receita após descontos menos o custo",icon:TrendingUp,color:"green"}
+    {label:"Lucro das últimas 24 horas",value:currency(m?.last_24h_profit),detail:"Vendas registradas nas últimas 24h, menos os custos",icon:TrendingUp,color:"green"}
     ]},
     {title:"Vendas e faturamento",className:"summary-metrics",metrics:[
     {label:"Vendas no mês",value:count(m?.month_sales),detail:"Vendas concluídas no mês",icon:Receipt,color:"violet"},
     {label:"Faturamento no mês",value:currency(m?.month_revenue),detail:"Receita no mês atual",icon:Wallet,color:"blue"},
-    {label:"Lucro bruto no mês",value:currency(m?.month_profit),detail:"Receita menos custo no mês",icon:TrendingUp,color:"green"},
+    {label:"Lucro bruto no mês",value:currency(m?.month_profit),detail:"Receita após descontos menos os custos do mês",icon:TrendingUp,color:"green"},
     {label:"Faturamento acumulado",value:currency(m?.all_revenue),detail:"Desde o início da operação",icon:Banknote,color:"violet"},
     {label:"Ticket médio",value:currency(m?.ticket),detail:"Por venda no período",icon:BadgeDollarSign,color:"cyan"},
     ]},
@@ -49,7 +49,7 @@ export function Dashboard({report,range,user,signedIn,configured,showReports}:{s
       <h2>{group.title}</h2>
       <div className={"metric-grid dashboard-metrics "+group.className}>
         {group.metrics.map(({label,value,detail,icon:Icon,color})=>
-          <Card className={"metric"+(label==="Lucro do dia"?" daily-profit":"")} key={label}>
+          <Card className={"metric"+(label==="Lucro das últimas 24 horas"?" daily-profit":"")} key={label}>
             <div className="metric-label"><span className={"metric-icon "+color}><Icon size={17}/></span><h3>{label}</h3></div>
             <EmptyValue value={value}/><p>{detail}</p>
           </Card>)}
@@ -59,7 +59,7 @@ export function Dashboard({report,range,user,signedIn,configured,showReports}:{s
       <Card className="chart-card"><div className="chart-heading"><span className="metric-icon blue"><BarChart3 size={19}/></span><div><h3>Faturamento por dia</h3><p>Receita de vendas no período selecionado</p></div></div><Trend data={report?.daily ?? []}/></Card>
       <Card className="chart-card"><div className="chart-heading"><span className="metric-icon amber"><Trophy size={18}/></span><div><h3>Produtos mais vendidos</h3><p>Ranking por quantidade vendida</p></div></div><RankingList rows={(report?.ranking ?? []).slice(0,5).map(x=>({name:x.name,amount:x.quantity}))}/>{showReports && <Link className="ranking-link" href="/relatorios">Ver relatórios <ArrowRight size={15}/></Link>}</Card>
     </div>
-    {report && <Card className="panel"><div className="panel-heading"><div><h2>Lucro total por produto</h2><p className="muted">Receita após descontos menos o custo das unidades vendidas no período.</p></div>{showReports && <Link href={"/relatorios?view=products&period=custom&from="+range.from+"&to="+range.to}>Ver todos</Link>}</div>{report.ranking.length?<div className="table-wrap"><table><thead><tr><th>Produto</th><th>Unidades vendidas</th><th>Lucro bruto total</th></tr></thead><tbody>{[...report.ranking].sort((a,b)=>b.profit-a.profit).slice(0,5).map(r=><tr key={r.product_id}><td>{r.name}</td><td>{num(r.quantity)}</td><td><strong>{brl(r.profit)}</strong></td></tr>)}</tbody></table></div>:<p>Nenhuma venda no período.</p>}</Card>}
+    {report && <Card className="panel"><div className="panel-heading"><div><h2>Lucro total por produto</h2><p className="muted">Receita após descontos menos os custos dos produtos e dos insumos no período.</p></div>{showReports && <Link href={"/relatorios?view=products&period=custom&from="+range.from+"&to="+range.to}>Ver todos</Link>}</div>{report.ranking.length?<div className="table-wrap"><table><thead><tr><th>Produto</th><th>Unidades vendidas</th><th>Lucro bruto total</th></tr></thead><tbody>{[...report.ranking].sort((a,b)=>b.profit-a.profit).slice(0,5).map(r=><tr key={r.product_id}><td>{r.name}</td><td>{num(r.quantity)}</td><td><strong>{brl(r.profit)}</strong></td></tr>)}</tbody></table></div>:<p>Nenhuma venda no período.</p>}</Card>}
     {report && <ReportCharts report={report}/>}
   </>
 }
