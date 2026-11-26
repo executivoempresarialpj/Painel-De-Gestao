@@ -3,7 +3,7 @@ import {Notifications} from "@/components/notifications"
 import Link from "next/link"
 import {usePathname} from "next/navigation"
 import {useState} from "react"
-import { Receipt as ReceiptIcon, LayoutDashboard, Package, Boxes, ShoppingCart, History, ChartNoAxesCombined, UsersRound, Settings, Store as StoreIcon, ChevronsUpDown, ChevronDown, PanelLeft, Menu, X, LogOut, LogIn, ShieldCheck } from "lucide-react"
+import { Receipt as ReceiptIcon, LayoutDashboard, Package, Boxes, ArrowDownToLine, ShoppingCart, History, ChartNoAxesCombined, UsersRound, Settings, Store as StoreIcon, ChevronsUpDown, ChevronDown, PanelLeft, Menu, X, LogOut, LogIn, ShieldCheck } from "lucide-react"
 import {chooseStore,logout} from "@/app/actions"
 import type {Store} from "@/lib/supabase"
 
@@ -11,6 +11,7 @@ const retailLinks = [
   {title:"Painel Executivo",href:"/",icon:LayoutDashboard},
   {title:"Produtos",href:"/produtos",icon:Package},
   {title:"Estoque",href:"/estoque",icon:Boxes},
+  {title:"Adicionar estoque",href:"/entrada-estoque",icon:ArrowDownToLine},
   {title:"Nova Venda — PDV",href:"/pdv",icon:ShoppingCart},
   {title:"Histórico de Vendas",href:"/vendas",icon:History},
   {title:"Relatórios",href:"/relatorios",icon:ChartNoAxesCombined},
@@ -29,7 +30,7 @@ export function Shell({children,store,stores,email,master}:{children:React.React
   const allowed=(key:string)=>store?.role==="owner" || !!store?.permissions.includes(key)
   const visible=links.filter(link=> !store || !(
     link.href==="/" && !allowed("executive") || link.href==="/relatorios" && !allowed("reports") ||
-    link.href==="/estoque" && !allowed("stock") ||
+    ["/estoque","/entrada-estoque"].includes(link.href) && !allowed("stock") ||
     administration.includes(link.href) && store.role!=="owner" ||
     link.href==="/configuracoes" && store.mode==="services" && !allowed("settings")
   ))
