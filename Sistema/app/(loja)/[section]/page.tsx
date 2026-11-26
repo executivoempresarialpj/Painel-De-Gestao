@@ -7,7 +7,8 @@ import {session,can,type Store} from "@/lib/supabase"
 import {Heading,ReportCharts} from "@/components/report-view"
 import {Card} from "@/components/ui/card"
 import {ActionForm} from "@/components/form"
-import {MemberForm} from "@/components/store-forms"
+import {MemberForm,ProductForm} from "@/components/store-forms"
+import {StockEntry} from "@/components/stock-entry"
 import {EditProduct,MovementTable,Pagination,ProductTable,SearchForm,currentPage} from "@/components/tables"
 import {ProductImport} from "@/components/product-import"
 import {Pos} from "@/components/pos"
@@ -21,6 +22,7 @@ import {brl,movementLabels,num,paymentLabels,showDate} from "@/lib/utils"
 const pages:Record<string,[string,string,string?]>={
   produtos:["Produtos","Gerencie seu catálogo, preços e disponibilidade."],
   estoque:["Estoque","Consulte saldos e registre movimentações da sua loja.","stock"],
+  "entrada-estoque":["Adicionar estoque","Reponha produtos existentes e cadastre novos itens em um só lugar.","stock"],
   pdv:["Nova Venda — PDV","Registre vendas presenciais e acompanhe o carrinho."],
   vendas:["Histórico de Vendas","Consulte vendas, pagamentos e cancelamentos."],
   relatorios:["Relatórios","Analise vendas, faturamento, lucro bruto e estoque.","reports"],
@@ -74,6 +76,20 @@ export default async function Section({params,searchParams}:{params:Promise<{sec
       case "pdv": {
         const products=await catalog({page_size:100,page_number:0,q:"",only_active:true})
         return <>{heading}<Pos zone={store.timezone} key={store.id} store={store.id} user={auth.user.id} initial={products.map(({cost:_,...p})=>p)}/></>
+      }
+      case "entrada-estoque": {
+        const products:Product[]=[]
+        for(let pageNumber=0;;pageNumber++){
+          const batch=await catalog({q:"",page_size:101,page_number:pageNumber,only_active:false})
+          products.push(...batch)
+          if(batch.length<101)break
+        }
+        const editable=can(store,"products")
+        return <><Heading title={title} subtitle={subtitle}>{editable&&<a href="#novo-produto" className="button default"><Plus size={18}/> Novo produto</a>}<Link href="/estoque" className="button outline">Histórico de estoque <ArrowRight size={16}/></Link></Heading>
+          <section className="overview-banner entry-banner"><div className="banner-content"><span className="banner-icon"><Plus size={24}/></span><div><h2>Central de entrada de mercadorias</h2><p>Atualize vários saldos de uma vez ou cadastre um produto com seu estoque inicial.</p></div></div></section>
+          <StockEntry key={store.id} store={store.id} products={products}/>
+          {editable&&<Card className="panel entry-new" ><section id="novo-produto"><div className="entry-panel-head"><div><h2>Novo produto</h2><p className="muted">Cadastre o item, seu preço, custo e quantidade inicial. Ele entrará automaticamente no catálogo e estoque.</p></div></div><ProductForm store={store.id} services={store.mode==="services"} minimum={store.minimum} unit={store.unit}/></section></Card>}
+        </>
       }
       case "estoque": {
         const [found,movements,adjust]=await Promise.all([catalog({page_size:30,page_number:0}),stocks(),isId(query.adjust)?loadProduct(db,store,query.adjust!):undefined])
