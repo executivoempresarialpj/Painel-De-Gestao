@@ -114,7 +114,7 @@ export async function receiveManualStock(store:string,reference:string,lines:str
   if(typeof lines!=="string" || lines.length>100000 || typeof reference!=="string" || !/^Entrada manual [0-9a-f-]{36}$/.test(reference)) return {error:"Entrada inválida."}
   let items:unknown
   try{items=JSON.parse(lines)}catch{return {error:"Entrada inválida."}}
-  if(!Array.isArray(items)||items.length<1||items.length>250||items.some(item=>!item||typeof item.sku!=="string"||typeof item.quantity!=="string"||!/^[0-9]{1,11}(\\.[0-9]{1,3})?$/.test(item.quantity)||Number(item.quantity)<=0))return {error:"Confira os produtos e as quantidades."}
+  if(!Array.isArray(items)||items.length<1||items.length>250||items.some(item=>!item||typeof item.sku!=="string"||typeof item.quantity!=="string"||!/^[0-9]{1,11}(\.[0-9]{1,3})?$/.test(item.quantity)||Number(item.quantity)<=0))return {error:"Confira os produtos e as quantidades."}
   const {data,error}=await auth.db.rpc("receive_sheet",{s:store,reference_code:reference,lines:items})
   if(error)return {error:error.message,retry:!error.code||["PGRST000","PGRST001","PGRST002","PGRST003","57014","08000","08003","08006","08007"].includes(error.code)}
   revalidatePath("/","layout")
