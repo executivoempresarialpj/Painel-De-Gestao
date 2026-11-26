@@ -2,7 +2,7 @@
 
 import {useMemo,useRef,useState,useTransition} from "react"
 import {ArrowDownToLine,Boxes,CheckCircle2,Package,Search,Trash2} from "lucide-react"
-import {mutate} from "@/app/actions"
+import {receiveManualStock} from "@/app/actions"
 import {Card} from "@/components/ui/card"
 import {num} from "@/lib/utils"
 import type {Product} from "@/lib/models"
@@ -20,7 +20,6 @@ export function StockEntry({store,products}:{store:string;products:Product[]}){
   const busy=useRef(false)
   const chosen=useMemo(()=>products.filter(p=>p.active && !!draft[p.id]?.trim()),[products,draft])
   const validLines=chosen.every(p=>valid(normalizeQty(draft[p.id])))
-  const total=chosen.reduce((sum,p)=>sum+(valid(normalizeQty(draft[p.id]))?Number(normalizeQty(draft[p.id])):0),0)
   const low=products.filter(p=>p.active && p.stock<=p.minimum).length
   const empty=products.filter(p=>p.active && p.stock===0).length
   const visible=products.filter(p=>{
@@ -36,10 +35,8 @@ export function StockEntry({store,products}:{store:string;products:Product[]}){
     const payload=request.current
     startTransition(async()=>{
       try{
-        const form=new FormData()
-        form.set("operation","receipt");form.set("store",store);form.set("reference",payload.reference);form.set("lines",payload.lines)
-        const result=await mutate({},form)
-        if(result.error){setFeedback({error:result.error});setRetryLocked(true);return}
+        const result=await receiveManualStock(store,payload.reference,payload.lines)
+        if(result.error){setFeedback({error:result.error});setRetryLocked(!!result.retry);if(!result.retry)request.current=null;return}
         setDraft({});request.current=null;setRetryLocked(false);setFeedback({message:result.message||"Entrada registrada."})
       }catch{setFeedback({error:"Não foi possível confirmar a resposta. Tente novamente para verificar a mesma entrada sem duplicá-la."});setRetryLocked(true)}
       finally{busy.current=false}
@@ -67,7 +64,7 @@ export function StockEntry({store,products}:{store:string;products:Product[]}){
           <div className="entry-balance entry-after"><small>Novo saldo estimado</small><strong>{num(rounded(p.stock+(good?Number(value):0)))} <span>{p.unit}</span></strong></div>
         </div>})}
       </div>
-      <div className="entry-footer"><div><strong>{chosen.length} produto(s) selecionado(s)</strong><p className="muted">{total?num(rounded(total))+" em quantidades informadas (unidades conforme produto)":"Nenhuma quantidade informada"}</p></div><div className="inline-actions"><button type="button" className="button outline" onClick={clear} disabled={pending||retryLocked||!chosen.length}><Trash2 size={16}/> Limpar</button><button type="button" className="button default" onClick={confirm} disabled={pending||!chosen.length||!validLines||chosen.length>250}><CheckCircle2 size={17}/>{pending?"Registrando…":retryLocked?"Confirmar mesma entrada":"Confirmar entrada"}</button></div></div>
+      <div className="entry-footer"><div><strong>{chosen.length} produto(s) selecionado(s)</strong><p className="muted">{chosen.length?"Confira as quantidades e os novos saldos antes de confirmar.":"Nenhuma quantidade informada"}</p></div><div className="inline-actions"><button type="button" className="button outline" onClick={clear} disabled={pending||retryLocked||!chosen.length}><Trash2 size={16}/> Limpar</button><button type="button" className="button default" onClick={confirm} disabled={pending||!chosen.length||!validLines||chosen.length>250}><CheckCircle2 size={17}/>{pending?"Registrando…":retryLocked?"Confirmar mesma entrada":"Confirmar entrada"}</button></div></div>
       {!validLines&&<p role="alert" className="error">Informe quantidades positivas, com até três casas decimais.</p>}
       {chosen.length>250&&<p role="alert" className="error">Registre até 250 produtos por entrada.</p>}
       {feedback.error&&<p role="alert" className="error">{feedback.error}{retryLocked?" Recarregue para corrigir, ou confirme novamente para consultar a mesma entrada.":""}</p>}
