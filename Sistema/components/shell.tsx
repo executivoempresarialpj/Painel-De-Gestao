@@ -34,6 +34,7 @@ export function Shell({children,store,stores,email,master}:{children:React.React
     administration.includes(link.href) && store.role!=="owner" ||
     link.href==="/configuracoes" && store.mode==="services" && !allowed("settings")
   ))
+  const shortcuts=[{href:"/",label:"Início"},{href:store?.mode==="services"?"/servicos":"/pdv",label:store?.mode==="services"?"Serviços":"Vender"},{href:"/entrada-estoque",label:"Entrada"},{href:"/estoque",label:"Estoque"}].flatMap(item=>{const link=visible.find(l=>l.href===item.href);return link?[{...link,label:item.label}]:[]})
   return <div className={collapsed?"shell collapsed":"shell"}>
     {open && <button className="scrim" aria-label="Fechar menu" onClick={()=>setOpen(false)}/>}
     <aside className={open?"sidebar open":"sidebar"}>
@@ -44,7 +45,7 @@ export function Shell({children,store,stores,email,master}:{children:React.React
           </div>
       </details>
       <div className="nav-title">MENU PRINCIPAL</div>
-      <nav className="nav-list" aria-label="Menu principal">{visible.filter(link=>!administration.includes(link.href)).map(({href,title,icon:Icon})=><Link title={title} key={href} href={href} onClick={()=>setOpen(false)} className={pathname===href?"active":""}><Icon size={18}/><span>{title}</span></Link>)}</nav>
+      <nav className="nav-list" aria-label="Menu principal">{visible.filter(link=>!administration.includes(link.href)).map(({href,title,icon:Icon})=><Link title={title} key={href} href={href} onClick={()=>setOpen(false)} aria-current={pathname===href?"page":undefined} className={pathname===href?"active":""}><Icon size={18}/><span>{title}</span></Link>)}</nav>
       {visible.some(link=>link.href==="/funcionarios") && <><div className="nav-title administration">ADMINISTRAÇÃO</div><nav className="nav-list" aria-label="Administração">{visible.filter(link=>administration.includes(link.href)).map(({href,title,icon:Icon})=><Link title={title} key={href} href={href} onClick={()=>setOpen(false)} className={pathname===href?"active":""}><Icon size={18}/><span>{title}</span></Link>)}</nav></>}
       <div className="sidebar-bottom"><span className="status-dot"/><span>Executivo Empresarial <small>v1.0</small></span></div>
     </aside>
@@ -55,6 +56,7 @@ export function Shell({children,store,stores,email,master}:{children:React.React
         {menu && <div className="profile-menu">{master && <Link href="/master"><ShieldCheck size={16}/> Painel master</Link>}{email?<form action={logout}><button><LogOut size={16}/> Sair</button></form>:<Link href="/login"><LogIn size={16}/> Entrar ou criar conta</Link>}</div>}</div></div>
       </header>
       <main className="main">{children}</main>
+      <nav className="mobile-dock" aria-label="Navegação rápida">{shortcuts.map(({href,label,icon:Icon})=><Link key={href} href={href} aria-current={pathname===href?"page":undefined} className={pathname===href?"selected":""} onClick={()=>setOpen(false)}><Icon size={21}/><span>{label}</span></Link>)}<button type="button" aria-expanded={open} onClick={()=>setOpen(!open)}><Menu size={21}/><span>Mais</span></button></nav>
     </div>
   </div>
 }
