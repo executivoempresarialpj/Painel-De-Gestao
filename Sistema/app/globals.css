@@ -393,3 +393,28 @@ input:not([type=checkbox]),select{min-height:42px;border-color:#d9e2ed;border-ra
 }
 @media(max-width:360px){.exec-hero-main>strong{font-size:29px}.exec-stat>strong{font-size:18px}.exec-stat{padding:10px}.entry-row{gap:6px}.mobile-dock>a,.mobile-dock>button{font-size:9px}}
 @media print{.mobile-dock{display:none!important}.exec-hero{background:#fff;color:#26364d;border:1px solid var(--border)}.exec-hero-main>p,.exec-hero-main>small,.exec-hero-side span,.exec-kicker{color:#44546a}.shell main{padding:0}}
+
+
+/* Restore the ten original indicators as one continuous grid. */
+.exec-overview-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.exec-overview-grid .exec-stat{min-height:121px;padding:14px;gap:8px}
+.exec-stat-label{display:flex;align-items:center;gap:9px;min-width:0;min-height:34px}
+.exec-stat-label .metric-icon{width:34px;height:34px;border-radius:9px;flex-shrink:0}
+.exec-stat-label h3{font-size:12px;color:#52637a;line-height:1.35;overflow-wrap:anywhere}
+.exec-overview-grid .exec-stat>strong{font-size:clamp(18px,1.65vw,24px);margin-top:3px;letter-spacing:-.6px}
+.exec-overview-grid .exec-stat>p{font-size:10.5px;color:#647387;line-height:1.4;margin-top:auto}
+.exec-overview-grid .metric-icon.blue{background:#eaf1fe;color:#365c9a}
+.exec-overview-grid .metric-icon.violet{background:#f0ecf9;color:#675193}
+.exec-overview-grid .metric-icon.cyan{background:#e7f3f5;color:#286d78}
+.exec-overview-grid .metric-icon.green{background:#e5f7ef;color:#137a53}
+.exec-overview-grid .metric-icon.amber{background:#fff3dd;color:#a76706}
+.exec-overview-grid .metric-icon.red{background:#ffecef;color:#b83755}
+body .page-heading h1,body .exec-section-heading h2,body .exec-hero-main>strong,body .exec-overview-grid .exec-stat>strong,body .entry-metric strong{font-weight:600!important}
+@media(min-width:761px) and (max-width:1120px){.exec-overview-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){
+.exec-overview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.exec-overview-grid .exec-stat{min-height:120px;padding:11px;gap:7px}
+.exec-stat-label{gap:7px;min-height:32px}.exec-stat-label .metric-icon{width:30px;height:30px}.exec-stat-label .metric-icon svg{width:15px;height:15px}
+.exec-stat-label h3{font-size:11px}.exec-overview-grid .exec-stat>strong{font-size:20px}.exec-overview-grid .exec-stat>p{font-size:10px}
+}
+@media(max-width:360px){.exec-overview-grid .exec-stat{padding:9px}.exec-overview-grid .exec-stat>strong{font-size:18px}}
